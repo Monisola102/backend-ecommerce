@@ -18,7 +18,8 @@ app.use(cookieParser());
 
 
 app.use(cors({
-  origin:[ "http://localhost:3000", "https://ecommerce-website-qr5tj727o-monisolas-projects-b08d7198.vercel.app/"],
+  origin:[ "http://localhost:3000", "https://ecommerce-website-qr5tj727o-monisolas-projects-b08d7198.vercel.app",    "https://ecommerce-website-psi-virid.vercel.app"
+],
   credentials: true               
 }));
 
