@@ -23,14 +23,6 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
-  res.send("Backend API is running...");
-});
-
-app.use("/users", userRoute);
-app.use("/products", productRoute);
-app.use("/admin", adminRoute);
-app.use("/carts", cartRoute);
 app.use("/order", orderRoute);
 app.use(errorHandler);
 DataBaseConnection().then(() => {
