@@ -1,5 +1,7 @@
 import UserModel from "../model/user-model.js";
 import PaymentModel from "../model/payments-model.js";
+import CartModel from "../model/cart-model.js";
+import OrderModel from "../model/order-model.js";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
