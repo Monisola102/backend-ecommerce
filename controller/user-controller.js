@@ -4,7 +4,7 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const maxAge = 30 * 24 * 60 * 60; 
+const maxAge = 30 * 24 * 60 * 60;
 
 const createToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -15,12 +15,11 @@ const createToken = (id, role) => {
 const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true,
-    maxAge: maxAge * 1000, 
+    maxAge: maxAge * 1000,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
 };
-
 
 export const RegisterUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -58,7 +57,6 @@ export const RegisterUser = asyncHandler(async (req, res) => {
   });
 });
 
-
 export const LogInUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -89,11 +87,11 @@ export const LogInUser = asyncHandler(async (req, res) => {
 });
 
 export const LogOutUser = asyncHandler(async (req, res) => {
-   res.cookie("jwt", "", {
+  res.cookie("jwt", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    expires: new Date(0), 
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    expires: new Date(0),
   });
 
   res.status(200).json({ message: "Logged out successfully" });
@@ -106,17 +104,18 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("User not found");
   }
- const token = createToken(user._id, user.role);
+  const token = createToken(user._id, user.role);
   setTokenCookie(res, token);
 
   res.status(200).json({
     message: "user fetched successfully",
-   data: { id: user._id.toString(),
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    shippingAddress: user.shippingAddress,
-   }
+    data: {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      shippingAddress: user.shippingAddress,
+    },
   });
 });
 
@@ -159,8 +158,8 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
       email: updatedUser.email,
       phone: updatedUser.phone,
       shippingAddress: updatedUser.shippingAddress,
-      role: updatedUser.role
-    }
+      role: updatedUser.role,
+    },
   });
 });
 export const getUserPayments = asyncHandler(async (req, res) => {
@@ -179,7 +178,7 @@ export const createPayment = asyncHandler(async (req, res) => {
     user: req.user._id,
     amount,
     method,
-    status: status || "pending"
+    status: status || "pending",
   });
 
   res.status(201).json({
@@ -190,21 +189,23 @@ export const createPayment = asyncHandler(async (req, res) => {
 export const getUserDashboard = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
-  const user = await UserModel.findById(userId).select("name email shippingAddress favorites");
+  const user = await UserModel.findById(userId).select(
+    "name email shippingAddress favorites"
+  );
 
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
 
-
   const orders = await OrderModel.find({ user: userId })
     .sort({ createdAt: -1 })
     .limit(3);
 
-  
   const cart = await CartModel.findOne({ user: userId });
-  const cartCount = cart ? cart.items.reduce((acc, item) => acc + item.quantity, 0) : 0;
+  const cartCount = cart
+    ? cart.items.reduce((acc, item) => acc + item.quantity, 0)
+    : 0;
 
   const favoritesCount = user.favorites?.length || 0;
 
@@ -223,20 +224,14 @@ export const getUserDashboard = asyncHandler(async (req, res) => {
   });
 });
 
-export const forgotPassword = asyncHandler(async(req,res)  => {
-  const { email} = req.body;
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
 
   const user = await UserModel.findOne({ email });
   if (!user) {
     res.status(404);
     throw new Error("User does not exist");
   }
-const token = createToken(user._id, user.role);
+  const token = createToken(user._id, user.role);
   setTokenCookie(res, token);
-
-
-
-
-
-
-})
+});
