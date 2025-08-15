@@ -15,24 +15,13 @@ const app = express();
 app.use(express.json());
 
 app.use(cookieParser());
-const allowedOrigins = [
-  "http://localhost:3000", 
-  process.env.FRONTEND_URL?.trim(),
-];
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("CORS not allowed"));
-      }
-    },
-    credentials: true, 
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
   })
 );
+
 app.get("/", (req, res) => {
   res.send("Backend API is running...");
 });
@@ -44,7 +33,7 @@ app.use("/carts", cartRoute);
 app.use("/order", orderRoute);
 app.use(errorHandler);
 DataBaseConnection().then(() => {
-  app.listen(process.env.PORT, () => {
-    console.log("Listening on port", process.env.PORT);
+  app.listen(process.env.PORT || 5000, () => {
+    console.log("Listening on port", process.env.PORT || 5000);
   });
 });
