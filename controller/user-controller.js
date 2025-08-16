@@ -95,8 +95,8 @@ export const LogOutUser = asyncHandler(async (req, res) => {
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 0
   });
-
   res.status(200).json({ message: "Logged out successfully" });
+  
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
