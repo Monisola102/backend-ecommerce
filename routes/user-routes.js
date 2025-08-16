@@ -5,7 +5,7 @@ import { protect } from "../middleware/authMiddleware.js";
 const route = express.Router();
 route.post('/signup', RegisterUser)
 route.post('/login', LogInUser )
-route.get('/logout', LogOutUser)
+route.post('/logout', LogOutUser)
 route.get('/set-cookie', handleCookies)
 route.get('/read-cookie', readCookies)
 route.get("/me", protect, getCurrentUser);
