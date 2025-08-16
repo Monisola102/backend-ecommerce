@@ -13,14 +13,23 @@ import cors from "cors";
 dotenv.config();
 const app = express();
 app.use(express.json());
+console.log("FRONTEND_URL value:", JSON.stringify(process.env.FRONTEND_URL)); 
 
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+      const allowedOrigin = process.env.FRONTEND_URL?.trim();
+      if (!origin || origin === allowedOrigin) {
+        callback(null, true); // allow this request
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
 
 app.get("/", (req, res) => {
   res.send("Backend API is running...");
