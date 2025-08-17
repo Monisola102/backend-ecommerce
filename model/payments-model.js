@@ -9,7 +9,7 @@ const PaymentSchema = new Schema({
 
   amount: { type: Number, required: true },
 
-  method: {
+  paymentMethod: {
     type: String,
     enum: ["visa", "mastercard", "verve", "paypal", "bank_transfer", "ussd"],
     required: true,

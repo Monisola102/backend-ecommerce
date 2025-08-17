@@ -169,9 +169,9 @@ export const getUserPayments = asyncHandler(async (req, res) => {
   res.status(200).json({ payments });
 });
 export const createPayment = asyncHandler(async (req, res) => {
-  const { amount, method, status } = req.body;
+  const { amount, paymentMethod, status } = req.body;
 
-  if (!amount || !method) {
+  if (!amount || !paymentMethod) {
     res.status(400);
     throw new Error("Amount and payment method are required");
   }
@@ -179,7 +179,7 @@ export const createPayment = asyncHandler(async (req, res) => {
   const payment = await PaymentModel.create({
     user: req.user._id,
     amount,
-    method,
+    paymentMethod,
     status: status || "pending",
   });
 
