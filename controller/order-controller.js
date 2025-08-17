@@ -1,11 +1,16 @@
 import asyncHandler from 'express-async-handler';
 import Order from '../model/order-model.js';
-import Product from '../model/product-model.js';
+import PaymentModel from '../model/payments-model.js';
 import Cart from '../model/cart-model.js';
 
 export const createOrder = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { shippingAddress } = req.body;
+  const { shippingAddress, paymentMethod} = req.body;
+
+  if (!paymentMethod) {
+    res.status(400);
+    throw new Error("Payment method is required");
+  }
 
   const cart = await Cart.findOne({ user: userId }).populate('items.product');
 
@@ -28,12 +33,20 @@ export const createOrder = asyncHandler(async (req, res) => {
     })),
     shippingAddress,
     totalPrice,
+    status:"pending"
   });
 
-  
+  const payment = await PaymentModel.create({
+    user: userId,
+    amount: totalPrice,
+    paymentMethod,
+    order: order._id,
+    status: "pending",
+  });
+
   await Cart.findOneAndDelete({ user: userId });
 
-  res.status(201).json({ message: 'Order placed successfully', order });
+  res.status(201).json({ message: 'Order placed successfully', order, payment });
 });
 
 export const getOrders = asyncHandler(async (req, res) => {
