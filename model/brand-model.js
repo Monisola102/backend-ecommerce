@@ -1,0 +1,32 @@
+import mongoose from "mongoose";
+
+const { Schema, model } = mongoose;
+
+const BrandSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Brand name is required"],
+      unique: true,
+      trim: true,
+    },
+    logo: {
+      type: String, // image URL or file path
+      required: false,
+    },
+    logoPublicId: {
+      type: String, // for cloud storage like Cloudinary
+      required: false,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true, // only admin can create
+    },
+  },
+  { timestamps: true }
+);
+
+const BrandModel = model("Brand", BrandSchema);
+
+export default BrandModel;

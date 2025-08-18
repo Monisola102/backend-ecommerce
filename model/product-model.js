@@ -9,7 +9,8 @@ const ProductSchema = new Schema(
       required: [true, "Product name is required"],
     },
     brand: {
-      type: String,
+      type:mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
     },
     description: {
       type: String,
