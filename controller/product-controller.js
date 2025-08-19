@@ -62,25 +62,29 @@ export const getProducts = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const search = req.query.search || "";
-  const category = req.query.category;
-   const query = {
-    $or: [
+  const search = req.query.search?.trim() || "";
+  const category = req.query.category?.trim();
+
+  const query = {};
+
+  // ✅ If search provided, add regex conditions
+  if (search) {
+    query.$or = [
       { name: { $regex: search, $options: "i" } },
       { category: { $regex: search, $options: "i" } },
       { brand: { $regex: search, $options: "i" } },
-    ],
-  };
-
-  if (category) {
-    query.category = category.trim();
+    ];
   }
+
+  // ✅ If category provided, add it as exact match
+  if (category) {
+    query.category = category;
+  }
+
   console.log("QUERY:", query);
 
   const total = await ProductsModel.countDocuments(query);
   const products = await ProductsModel.find(query).skip(skip).limit(limit);
-  console.log("FOUND PRODUCTS:", products.length);
-  console.log("PRODUCTS:", products);
 
   res.status(200).json({
     success: true,
@@ -93,6 +97,7 @@ export const getProducts = asyncHandler(async (req, res) => {
     },
   });
 });
+
 export const getSingleProduct = asyncHandler(async (req, res) => {
   const product = await ProductsModel.findById(req.params.id);
   if (!product) {
