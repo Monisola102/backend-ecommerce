@@ -67,24 +67,25 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const query = {};
 
-  // ✅ If search provided, add regex conditions
   if (search) {
     query.$or = [
       { name: { $regex: search, $options: "i" } },
       { category: { $regex: search, $options: "i" } },
-      { brand: { $regex: search, $options: "i" } },
+      // 🚨 removed brand regex because it's an ObjectId
     ];
   }
 
-  // ✅ If category provided, add it as exact match
   if (category) {
-    query.category = category;
+    query.category = category; // exact match from enum
   }
 
   console.log("QUERY:", query);
 
   const total = await ProductsModel.countDocuments(query);
-  const products = await ProductsModel.find(query).skip(skip).limit(limit);
+  const products = await ProductsModel.find(query)
+    .skip(skip)
+    .limit(limit)
+    .populate("brand", "name"); // populate brand name if needed
 
   res.status(200).json({
     success: true,
@@ -97,7 +98,6 @@ export const getProducts = asyncHandler(async (req, res) => {
     },
   });
 });
-
 export const getSingleProduct = asyncHandler(async (req, res) => {
   const product = await ProductsModel.findById(req.params.id);
   if (!product) {
