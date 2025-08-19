@@ -1,17 +1,13 @@
 import express from "express";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
-import {
-  createBrand,
-  getBrands,
-  updateBrand,
-  deleteBrand,
-} from "../controllers/brand-controller.js";
+import { createBrand, updateBrand, getBrands, deleteBrand } from "../controller/brand-controller.js";
+import upload from "../middleware/uploadMiddleware.js";
 
-const router = express.Router();
+const route = express.Router();
 
-router.post("/", protect, adminOnly, createBrand); 
-router.get("/", getBrands);
-router.put("/:id", protect, adminOnly, updateBrand);
-router.delete("/:id", protect, adminOnly, deleteBrand);
+route.post("/createbrand", protect, adminOnly, upload.single("logo"),createBrand); 
+route.get("/", getBrands);
+route.put("/:id", protect, adminOnly, upload.single("logo"), updateBrand);
+route.delete("/:id", protect, adminOnly, deleteBrand);
 
-export default router;
+export default route;

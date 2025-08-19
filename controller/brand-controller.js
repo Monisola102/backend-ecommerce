@@ -1,9 +1,9 @@
 import asyncHandler from "express-async-handler";
 import BrandModel from "../model/brand-model.js";
-
-// Create brand
+import { saveImage } from "../utils/saveImage.js";
+import cloudinary from "../utils/cloudinary.js";
 export const createBrand = asyncHandler(async (req, res) => {
-  const { name, logo } = req.body;
+  const { name } = req.body;
 
   const brandExists = await BrandModel.findOne({ name });
   if (brandExists) {
@@ -11,14 +11,29 @@ export const createBrand = asyncHandler(async (req, res) => {
     throw new Error("Brand already exists");
   }
 
+  let logo, logoPublicId;
+
+  if (req.file) {
+    try {
+      const result = await saveImage(req.file, "brands");
+      logo = result.secure_url;
+      logoPublicId = result.public_id;
+    } catch (error) {
+      res.status(500);
+      throw new Error("Logo upload failed");
+    }
+  }
+
   const brand = await BrandModel.create({
     name,
     logo,
+    logoPublicId,
     createdBy: req.user._id,
   });
 
   res.status(201).json(brand);
 });
+
 
 // Get all brands
 export const getBrands = asyncHandler(async (req, res) => {
@@ -26,7 +41,6 @@ export const getBrands = asyncHandler(async (req, res) => {
   res.json(brands);
 });
 
-// Update brand
 export const updateBrand = asyncHandler(async (req, res) => {
   const brand = await BrandModel.findById(req.params.id);
 
@@ -35,12 +49,35 @@ export const updateBrand = asyncHandler(async (req, res) => {
     throw new Error("Brand not found");
   }
 
+  // Update name if provided
   brand.name = req.body.name || brand.name;
-  brand.logo = req.body.logo || brand.logo;
+
+  // Handle logo file upload
+  if (req.file) {
+    // Delete old logo from Cloudinary if exists
+    if (brand.logoPublicId) {
+      await cloudinary.uploader.destroy(brand.logoPublicId);
+    }
+
+    // Upload new logo
+    try {
+      const result = await saveImage(req.file, "brands");
+      brand.logo = result.secure_url;
+      brand.logoPublicId = result.public_id;
+    } catch (error) {
+      res.status(500);
+      throw new Error("Logo upload failed");
+    }
+  }
 
   const updatedBrand = await brand.save();
-  res.json(updatedBrand);
+
+  res.status(200).json({
+    message: "Brand updated successfully",
+    data: updatedBrand,
+  });
 });
+
 
 // Delete brand
 export const deleteBrand = asyncHandler(async (req, res) => {

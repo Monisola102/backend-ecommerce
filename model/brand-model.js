@@ -11,11 +11,11 @@ const BrandSchema = new Schema(
       trim: true,
     },
     logo: {
-      type: String, // image URL or file path
+      type: String, 
       required: false,
     },
     logoPublicId: {
-      type: String, // for cloud storage like Cloudinary
+      type: String, 
       required: false,
     },
     createdBy: {
