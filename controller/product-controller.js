@@ -1,4 +1,5 @@
 import ProductsModel from "../model/product-model.js";
+import BrandModel from "../model/brand-model.js";
 import asyncHandler from "express-async-handler";
 import { saveImage } from "../utils/saveImage.js";
 import cloudinary from "../utils/cloudinary.js";
@@ -19,6 +20,11 @@ export const createProduct = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Invalid sizes format. Must be a valid JSON array.");
   }
+const brandDoc = await BrandModel.findOne({ name: brand });
+  if (!brandDoc) {
+    res.status(400);
+    throw new Error("Brand does not exist. Please create it first.");
+  }
 
   let image, imagePublicId;
 
@@ -35,7 +41,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   const created = await ProductsModel.create({
     name,
-    brand,
+    brand: brandDoc._id,
     price,
     description,
     image,
