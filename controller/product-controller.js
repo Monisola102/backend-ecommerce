@@ -105,7 +105,7 @@ export const getProducts = asyncHandler(async (req, res) => {
   });
 });
 export const getSingleProduct = asyncHandler(async (req, res) => {
-  const product = await ProductsModel.findById(req.params.id);
+  const product = await ProductsModel.findById(req.params.id).populate("brand", "name");
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
