@@ -70,28 +70,34 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const search = req.query.search?.trim() || "";
   const category = req.query.category?.trim();
-
+const brand = req.query.brand?.trim();
   const query = {};
 
   if (search) {
     query.$or = [
       { name: { $regex: search, $options: "i" } },
       { category: { $regex: search, $options: "i" } },
-      // 🚨 removed brand regex because it's an ObjectId
     ];
   }
 
   if (category) {
-    query.category = category; // exact match from enum
+    query.category = category;
   }
 
+if (brand) {
+    // Since product stores brand as ObjectId, we find brand by name
+    const brandDoc = await BrandModel.findOne({ name: brand });
+    if (brandDoc) {
+      query.brand = brandDoc._id;
+    }
+  }
   console.log("QUERY:", query);
 
   const total = await ProductsModel.countDocuments(query);
   const products = await ProductsModel.find(query)
     .skip(skip)
     .limit(limit)
-    .populate("brand", "name"); // populate brand name if needed
+    .populate("brand", "name");
 
   res.status(200).json({
     success: true,
