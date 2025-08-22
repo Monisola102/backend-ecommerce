@@ -20,7 +20,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Invalid sizes format. Must be a valid JSON array.");
   }
-const brandDoc = await BrandModel.findOne({ name: brand });
+  const brandDoc = await BrandModel.findOne({ name: brand });
   if (!brandDoc) {
     res.status(400);
     throw new Error("Brand does not exist. Please create it first.");
@@ -67,10 +67,14 @@ export const getProducts = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
-
   const search = req.query.search?.trim() || "";
   const category = req.query.category?.trim();
-const brand = req.query.brand?.trim();
+  const brand = req.query.brand?.trim();
+  const minPrice = req.query.minPrice ? Number(req.query.minPrice) : undefined;
+  const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : undefined;
+  const sort = req.query.sort || "createdAt"; // default sort by newest
+  const order = req.query.order === "asc" ? 1 : -1; // default descending
+
   const query = {};
 
   if (search) {
@@ -84,7 +88,7 @@ const brand = req.query.brand?.trim();
     query.category = category;
   }
 
-if (brand) {
+  if (brand) {
     // Since product stores brand as ObjectId, we find brand by name
     const brandDoc = await BrandModel.findOne({ name: brand });
     if (brandDoc) {
@@ -92,11 +96,17 @@ if (brand) {
     }
   }
   console.log("QUERY:", query);
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    query.price = {};
+    if (minPrice !== undefined) query.price.$gte = minPrice;
+    if (maxPrice !== undefined) query.price.$lte = maxPrice;
+  }
 
   const total = await ProductsModel.countDocuments(query);
   const products = await ProductsModel.find(query)
     .skip(skip)
     .limit(limit)
+    .sort({ [sort]: order })
     .populate("brand", "name");
 
   res.status(200).json({
@@ -111,14 +121,17 @@ if (brand) {
   });
 });
 export const getSingleProduct = asyncHandler(async (req, res) => {
-  const product = await ProductsModel.findById(req.params.id).populate("brand", "name");
+  const product = await ProductsModel.findById(req.params.id).populate(
+    "brand",
+    "name"
+  );
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
-   res.json({
+  res.json({
     success: true,
     message: "Product fetched successfully",
-    data: product
+    data: product,
   });
 });
 
