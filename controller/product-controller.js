@@ -46,7 +46,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     description,
     image,
     imagePublicId,
-    category: category.toLowercase(),
+    category: category.toLowerCase(),
     inStock,
     sizes: parsedSizes,
     admin: req.user._id,
