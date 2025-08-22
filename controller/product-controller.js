@@ -46,7 +46,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     description,
     image,
     imagePublicId,
-    category,
+    category: category.toLowercase(),
     inStock,
     sizes: parsedSizes,
     admin: req.user._id,
@@ -85,8 +85,9 @@ export const getProducts = asyncHandler(async (req, res) => {
   }
 
   if (category) {
-    query.category = category;
-  }
+  query.category = { $regex: `^${category}$`, $options: "i" }; 
+}
+
 
   if (brand) {
     // Since product stores brand as ObjectId, we find brand by name
