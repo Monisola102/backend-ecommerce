@@ -3,17 +3,24 @@ import UserModel from "../model/user-model.js";
 import Product from "../model/product-model.js";
 
 export const addFavorite = asyncHandler(async (req, res) => {
-  const { productId, size} = req.body;
-const user = await UserModel.findById(req.user._id).populate("favorites.product");
-  if (!user.favorites.some(fav => fav.product.toString() === productId && fav.size === size)) {
-  user.favorites.push({ product: productId, size: size || "" });
-  await user.save();
-}
+  const { productId, size } = req.body;
+  const user = await UserModel.findById(req.user._id);
+
+  // check if this product+size combo already exists
+  if (!user.favorites.some(fav => fav.product.toString() === productId && fav.size === (size || ""))) {
+    user.favorites.push({ product: productId, size: size || "" });
+    await user.save();
+  }
+
+  // populate product info for response
+  await user.populate("favorites.product");
+
   res.status(200).json({
     message: "Added to favorites",
     favorites: user.favorites,
   });
 });
+
 
 export const removeFavorite = asyncHandler(async (req, res) => {
   const { productId } = req.body;
