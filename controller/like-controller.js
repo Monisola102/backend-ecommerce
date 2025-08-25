@@ -1,18 +1,30 @@
 import asyncHandler from "express-async-handler";
 import UserModel from "../model/user-model.js";
-import Product from "../model/product-model.js";
 
+// Add favorite
 export const addFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
   const user = await UserModel.findById(req.user._id);
 
-  // check if this product+size combo already exists
-  if (!user.favorites.some(fav => fav.product.toString() === productId && fav.size === (size || ""))) {
-    user.favorites.push({ product: productId, size: size || "" });
-    await user.save();
+  if (!user.favorites) user.favorites = [];
+
+  // Normalize existing favorites (convert strings to objects)
+  const normalizedFavorites = user.favorites.map(fav =>
+    typeof fav === "string" ? { product: fav, size: "" } : fav
+  );
+
+  // Prevent duplicate product+size
+  const exists = normalizedFavorites.some(
+    fav => fav.product.toString() === productId && fav.size === (size || "")
+  );
+
+  if (!exists) {
+    normalizedFavorites.push({ product: productId, size: size || "" });
   }
 
-  // populate product info for response
+  user.favorites = normalizedFavorites;
+  await user.save();
+
   await user.populate("favorites.product");
 
   res.status(200).json({
@@ -21,15 +33,21 @@ export const addFavorite = asyncHandler(async (req, res) => {
   });
 });
 
-
+// Remove favorite
 export const removeFavorite = asyncHandler(async (req, res) => {
-  const { productId } = req.body;
+  const { productId, size } = req.body;
   const user = await UserModel.findById(req.user._id);
 
+  if (!user.favorites) user.favorites = [];
+
+  // Remove by productId and optional size
   user.favorites = user.favorites.filter(
-    (id) => id.toString() !== productId
+    fav =>
+      !(fav.product.toString() === productId && fav.size === (size || ""))
   );
+
   await user.save();
+  await user.populate("favorites.product");
 
   res.status(200).json({
     message: "Removed from favorites",
@@ -37,17 +55,16 @@ export const removeFavorite = asyncHandler(async (req, res) => {
   });
 });
 
-
+// Get favorites
 export const getFavorites = asyncHandler(async (req, res) => {
-  console.log("Fetching favorites for user:", req.user._id); 
-  const user = await UserModel.findById(req.user._id).populate("favorites");
+  const user = await UserModel.findById(req.user._id).populate(
+    "favorites.product"
+  );
 
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
-
-  console.log("Favorites returned:", user.favorites); 
 
   res.status(200).json({
     message: "Fetched favorites",
