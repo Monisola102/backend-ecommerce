@@ -8,6 +8,7 @@ import adminRoute from "./routes/admin-routes.js";
 import cartRoute from "./routes/carts-routes.js";
 import orderRoute from "./routes/order-routes.js";
 import brandRoute from "./routes/brand-routes.js";
+import favRoute from "./routes/fav-routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -42,6 +43,8 @@ app.use("/admin", adminRoute);
 app.use("/carts", cartRoute);
 app.use("/order", orderRoute);
 app.use("/brands", brandRoute);
+app.use("/favorite", favRoute);
+
 app.use(errorHandler);
 DataBaseConnection().then(() => {
   app.listen(process.env.PORT || 5000, () => {

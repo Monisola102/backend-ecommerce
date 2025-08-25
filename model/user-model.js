@@ -51,12 +51,6 @@ phone: {
       enum: ["admin", "user"],
       default: "user",
     },
-favorites: [
-  {
-    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    size: { type: String, default: "" },
-  },
-],
   },
   {
     timestamps: true,

@@ -9,9 +9,6 @@ route.post('/logout', LogOutUser)
 route.get('/set-cookie', handleCookies)
 route.get('/read-cookie', readCookies)
 route.get("/me", protect, getCurrentUser);
-route.get("/favorites", protect, getFavorites);
-route.post("/add-favorite", protect, addFavorite);
-route.post("/remove-favorite", protect, removeFavorite);
 route.patch("/update-profile", protect, updateUserProfile);
 route.get('/payments', protect, getUserPayments);
 route.post('/create-payment', protect, createPayment);

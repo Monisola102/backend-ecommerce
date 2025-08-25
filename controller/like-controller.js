@@ -1,78 +1,59 @@
 import asyncHandler from "express-async-handler";
-import UserModel from "../model/user-model.js";
-import Product from "../model/product-model.js";
+import FavModel from "../model/fav-model.js";
 
 // Add favorite
 export const addFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
-  const user = await UserModel.findById(req.user._id);
 
-  if (!user) throw new Error("User not found");
-
-  // normalize old string favorites
-  user.favorites = user.favorites.map(fav => {
-    if (typeof fav === "string") return { product: fav, size: "" };
-    return fav;
+  const exists = await FavModel.findOne({
+    user: req.user._id,
+    product: productId,
+    size: size || "",
   });
 
-  // check if product+size already exists
-  const exists = user.favorites.some(
-    fav => fav.product.toString() === productId && fav.size === (size || "")
-  );
-
-  if (!exists) {
-    user.favorites.push({ product: productId, size: size || "" });
-    await user.save();
+  if (exists) {
+    return res.status(200).json({
+      message: "Already in favorites",
+      favorite: exists,
+    });
   }
 
-  await user.populate("favorites.product");
+  const favorite = await FavModel.create({
+    user: req.user._id,
+    product: productId,
+    size: size || "",
+  });
 
-  res.status(200).json({
+  await favorite.populate("product");
+
+  res.status(201).json({
     message: "Added to favorites",
-    favorites: user.favorites,
+    favorite,
   });
 });
 
 // Remove favorite
 export const removeFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
-  const user = await UserModel.findById(req.user._id);
 
-  if (!user) throw new Error("User not found");
-
-  // normalize old string favorites
-  user.favorites = user.favorites.map(fav => {
-    if (typeof fav === "string") return { product: fav, size: "" };
-    return fav;
+  const deleted = await FavModel.findOneAndDelete({
+    user: req.user._id,
+    product: productId,
+    size: size || "",
   });
-
-  user.favorites = user.favorites.filter(
-    fav => !(fav.product.toString() === productId && fav.size === (size || ""))
-  );
-
-  await user.save();
-  await user.populate("favorites.product");
 
   res.status(200).json({
     message: "Removed from favorites",
-    favorites: user.favorites,
+    favorite: deleted,
   });
 });
 
 // Get favorites
 export const getFavorites = asyncHandler(async (req, res) => {
-  const user = await UserModel.findById(req.user._id).populate("favorites.product");
-
-  if (!user) throw new Error("User not found");
-
-  // normalize old string favorites
-  user.favorites = user.favorites.map(fav => {
-    if (typeof fav === "string") return { product: fav, size: "" };
-    return fav;
-  });
+  const favorites = await FavModel.find({ user: req.user._id }).populate("product");
 
   res.status(200).json({
     message: "Fetched favorites",
-    favorites: user.favorites,
+    favorites,
   });
 });
