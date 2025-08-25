@@ -1,29 +1,29 @@
 import asyncHandler from "express-async-handler";
 import UserModel from "../model/user-model.js";
+import Product from "../model/product-model.js";
 
 // Add favorite
 export const addFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
   const user = await UserModel.findById(req.user._id);
 
-  if (!user.favorites) user.favorites = [];
+  if (!user) throw new Error("User not found");
 
-  // Normalize existing favorites (convert strings to objects)
-  const normalizedFavorites = user.favorites.map(fav =>
-    typeof fav === "string" ? { product: fav, size: "" } : fav
-  );
+  // normalize old string favorites
+  user.favorites = user.favorites.map(fav => {
+    if (typeof fav === "string") return { product: fav, size: "" };
+    return fav;
+  });
 
-  // Prevent duplicate product+size
-  const exists = normalizedFavorites.some(
+  // check if product+size already exists
+  const exists = user.favorites.some(
     fav => fav.product.toString() === productId && fav.size === (size || "")
   );
 
   if (!exists) {
-    normalizedFavorites.push({ product: productId, size: size || "" });
+    user.favorites.push({ product: productId, size: size || "" });
+    await user.save();
   }
-
-  user.favorites = normalizedFavorites;
-  await user.save();
 
   await user.populate("favorites.product");
 
@@ -38,12 +38,16 @@ export const removeFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
   const user = await UserModel.findById(req.user._id);
 
-  if (!user.favorites) user.favorites = [];
+  if (!user) throw new Error("User not found");
 
-  // Remove by productId and optional size
+  // normalize old string favorites
+  user.favorites = user.favorites.map(fav => {
+    if (typeof fav === "string") return { product: fav, size: "" };
+    return fav;
+  });
+
   user.favorites = user.favorites.filter(
-    fav =>
-      !(fav.product.toString() === productId && fav.size === (size || ""))
+    fav => !(fav.product.toString() === productId && fav.size === (size || ""))
   );
 
   await user.save();
@@ -57,14 +61,15 @@ export const removeFavorite = asyncHandler(async (req, res) => {
 
 // Get favorites
 export const getFavorites = asyncHandler(async (req, res) => {
-  const user = await UserModel.findById(req.user._id).populate(
-    "favorites.product"
-  );
+  const user = await UserModel.findById(req.user._id).populate("favorites.product");
 
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
+  if (!user) throw new Error("User not found");
+
+  // normalize old string favorites
+  user.favorites = user.favorites.map(fav => {
+    if (typeof fav === "string") return { product: fav, size: "" };
+    return fav;
+  });
 
   res.status(200).json({
     message: "Fetched favorites",
