@@ -50,10 +50,14 @@ export const removeFavorite = asyncHandler(async (req, res) => {
 
 // Get favorites
 export const getFavorites = asyncHandler(async (req, res) => {
-  const favorites = await FavModel.find({ user: req.user._id }).populate("product");
+  const favorites = await FavModel.find({ user: req.user._id }).populate({
+    path: "product",
+    populate: { path: "brand", select: "name" }, // populate brand with only name
+  });
 
   res.status(200).json({
     message: "Fetched favorites",
     favorites,
   });
 });
+
