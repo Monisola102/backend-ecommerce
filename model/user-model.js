@@ -51,17 +51,10 @@ phone: {
       enum: ["admin", "user"],
       default: "user",
     },
-   favorites: [
+    favorites: [
   {
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-    },
-    size: {
-      type: String, // selected size
-      required: false,
-    },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
   },
 ],
   },
