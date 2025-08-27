@@ -294,3 +294,19 @@ export const deleteReview = asyncHandler(async (req, res) => {
     data: product,
   });
 });
+// @desc    Get all reviews for a product
+// @route   GET /api/products/:id/reviews
+// @access  Public
+export const getReviews = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id).populate(
+    "reviews.user",
+    "name"
+  );
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  res.status(200).json(product.reviews);
+});
