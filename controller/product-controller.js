@@ -184,3 +184,113 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     id: product._id,
   });
 });
+export const addReview = asyncHandler(async (req, res) => {
+  const { rating, comment } = req.body;
+  const productId = req.params.id;
+
+  const product = await ProductsModel.findById(productId);
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  // check if user already reviewed
+  const alreadyReviewed = product.reviews.find(
+    (r) => r.user.toString() === req.user._id.toString()
+  );
+
+  if (alreadyReviewed) {
+    res.status(400);
+    throw new Error("You have already reviewed this product");
+  }
+
+  // push new review
+  const review = {
+    user: req.user._id,
+    rating: Number(rating),
+    comment,
+  };
+
+  product.reviews.push(review);
+
+  // update rating count & average
+  product.ratingCount = product.reviews.length;
+  product.ratingAverage =
+    product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+    product.reviews.length;
+
+  await product.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Review added successfully",
+    data: product,
+  });
+});
+export const updateReview = asyncHandler(async (req, res) => {
+  const { rating, comment } = req.body;
+  const productId = req.params.id;
+
+  const product = await ProductsModel.findById(productId);
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  const review = product.reviews.find(
+    (r) => r.user.toString() === req.user._id.toString()
+  );
+
+  if (!review) {
+    res.status(404);
+    throw new Error("Review not found");
+  }
+
+  review.rating = rating ?? review.rating;
+  review.comment = comment ?? review.comment;
+
+  // recalc ratings
+  product.ratingAverage =
+    product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+    product.reviews.length;
+
+  await product.save();
+
+  res.json({
+    success: true,
+    message: "Review updated successfully",
+    data: product,
+  });
+});
+export const deleteReview = asyncHandler(async (req, res) => {
+  const productId = req.params.id;
+
+  const product = await ProductsModel.findById(productId);
+
+  if (!product) {
+    res.status(404);
+    throw new Error("Product not found");
+  }
+
+  product.reviews = product.reviews.filter(
+    (r) => r.user.toString() !== req.user._id.toString()
+  );
+
+  // recalc ratings
+  product.ratingCount = product.reviews.length;
+  product.ratingAverage =
+    product.reviews.length > 0
+      ? product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+        product.reviews.length
+      : 0;
+
+  await product.save();
+
+  res.json({
+    success: true,
+    message: "Review deleted successfully",
+    data: product,
+  });
+});

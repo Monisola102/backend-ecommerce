@@ -1,6 +1,6 @@
 import express from "express"
 
-import { createProduct, getProducts,getSingleProduct, updateProduct, deleteProduct } from "../controller/product-controller.js"
+import { createProduct, getProducts,getSingleProduct, updateProduct, deleteProduct, addReview,updateReview, deleteReview } from "../controller/product-controller.js"
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 
@@ -12,4 +12,8 @@ route.get("/admin/products", protect, adminOnly, getProducts);
 route.get("/:id", getSingleProduct)
 route.put("/:id", protect, adminOnly, upload.single("image"), updateProduct);
 route.delete("/:id", protect, adminOnly, deleteProduct);
+route.post("/:id/reviews", protect, addReview);
+route.get("/:id/reviews", updateReview);
+route.delete("/:id/reviews/:reviewId", protect, deleteReview);
+
 export default route;

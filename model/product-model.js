@@ -2,6 +2,27 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
+const reviewSchema = new Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+      trim: true,
+    },
+  },
+  { timestamps: true }
+);
+
 const ProductSchema = new Schema(
   {
     name: {
@@ -9,7 +30,7 @@ const ProductSchema = new Schema(
       required: [true, "Product name is required"],
     },
     brand: {
-      type:mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Brand",
     },
     description: {
@@ -20,10 +41,10 @@ const ProductSchema = new Schema(
       required: [true, "Price is required"],
     },
     image: {
-      type: String, 
+      type: String,
     },
     imagePublicId: {
-      type: String, 
+      type: String,
     },
     category: {
       type: String,
@@ -61,6 +82,19 @@ const ProductSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+
+    // ⭐️ New fields for ratings & reviews
+    reviews: [reviewSchema],
+    ratingAverage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    ratingCount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
