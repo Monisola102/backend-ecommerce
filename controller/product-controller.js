@@ -298,7 +298,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
 // @route   GET /api/products/:id/reviews
 // @access  Public
 export const getReviews = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id).populate(
+  const product = await ProductsModel.findById(req.params.id).populate(
     "reviews.user",
     "name"
   );
