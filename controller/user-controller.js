@@ -5,6 +5,7 @@ import OrderModel from "../model/order-model.js";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 const maxAge = 30 * 24 * 60 * 60;
 
@@ -93,10 +94,9 @@ export const LogOutUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 0
+    maxAge: 0,
   });
   res.status(200).json({ message: "Logged out successfully" });
-  
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
@@ -229,12 +229,54 @@ export const getUserDashboard = asyncHandler(async (req, res) => {
 
 export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
+  if (!email) {
+    res.status(400);
+    throw new Error("Email is required");
+  }
 
   const user = await UserModel.findOne({ email });
   if (!user) {
     res.status(404);
     throw new Error("User does not exist");
   }
-  const token = createToken(user._id, user.role);
-  setTokenCookie(res, token);
+
+  // Create a temporary token valid for 1 hour
+  const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+  // Send email
+  await sendResetEmail(user.email, resetUrl);
+
+  res.status(200).json({ message: "Password reset link sent to your email" });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    res.status(400);
+    throw new Error("Token and new password are required");
+  }
+
+  // Verify token
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    res.status(400);
+    throw new Error("Invalid or expired token");
+  }
+
+  const user = await UserModel.findById(decoded.id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  user.password = await bcrypt.hash(password, 10);
+  await user.save();
+
+  res.status(200).json({ message: "Password reset successful" });
 });
