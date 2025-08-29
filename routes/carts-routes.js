@@ -8,6 +8,6 @@ route.get("/getCart", protect, getCart);
 route.post("/add", protect, addToCart);
 route.patch("/subtract", protect, subtractFromCart);
 route.delete("/clearCart", protect, clearCart);
-route.delete("/:productId", protect, deleteFromCart);
+route.delete("/delete/:productId", protect, deleteFromCart);
 
 export default route;
