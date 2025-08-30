@@ -58,3 +58,33 @@ export const getOrders = asyncHandler(async (req, res) => {
 
   res.status(200).json(orders);
 });
+// order-controller.js
+export const cancelOrder = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { orderId } = req.params;
+
+  // find the order
+  const order = await Order.findOne({ _id: orderId, user: userId });
+
+  if (!order) {
+    res.status(404);
+    throw new Error("Order not found");
+  }
+
+  // allow cancel only if still pending
+  if (order.status !== "pending") {
+    res.status(400);
+    throw new Error("Only pending orders can be canceled");
+  }
+
+  order.status = "cancelled";
+  await order.save();
+
+  // also update payment if it exists
+  await PaymentModel.findOneAndUpdate(
+    { order: order._id },
+    { status: "cancelled" }
+  );
+
+  res.status(200).json({ message: "Order cancelled successfully", order });
+});
