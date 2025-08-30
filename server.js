@@ -20,14 +20,7 @@ console.log("FRONTEND_URL value:", JSON.stringify(process.env.FRONTEND_URL));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: function (origin, callback) {
-      const allowedOrigin = process.env.FRONTEND_URL?.trim();
-      if (!origin || origin === allowedOrigin) {
-        callback(null, true); // allow this request
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin:"https://my-shoe-shop.vercel.app",
     credentials: true,
   })
 );

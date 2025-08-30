@@ -19,7 +19,7 @@ const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true,
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production"? true : false,
+    secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
 };
