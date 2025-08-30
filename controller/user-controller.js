@@ -19,7 +19,7 @@ const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true,
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production"? true : false,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
 };
@@ -57,6 +57,7 @@ export const RegisterUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       role: newUser.role,
     },
+    token
   });
 });
 
@@ -85,7 +86,8 @@ export const LogInUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-    },
+       },
+       token
   });
 });
 
