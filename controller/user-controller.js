@@ -15,14 +15,18 @@ const createToken = (id, role) => {
   });
 };
 
-const setTokenCookie = (res, token) => {
+export const setTokenCookie = (res, token) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("jwt", token, {
-    httpOnly: true,
+    httpOnly: true,                  // cannot be accessed by JS
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProduction,            // HTTPS only in production
+    sameSite: isProduction ? "none" : "lax", // cross-site for prod, lax for dev
+    path: "/",                       // send to all routes
   });
-};
+
+
 
 export const RegisterUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
