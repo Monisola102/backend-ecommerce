@@ -16,13 +16,11 @@ const createToken = (id, role) => {
 };
 
 export const setTokenCookie = (res, token) => {
-  const isProduction = process.env.NODE_ENV === "production";
-
   res.cookie("jwt", token, {
     httpOnly: true,                  // cannot be accessed by JS
     maxAge: maxAge * 1000,
-    secure: isProduction,            // HTTPS only in production
-    sameSite: isProduction ? "none" : "lax", // cross-site for prod, lax for dev
+    secure: process.env.NODE_ENV === "production",           // HTTPS only in production
+    sameSite: process.env.NODE_ENV === "production"? "none" : "lax", // cross-site for prod, lax for dev
     path: "/",                       // send to all routes
   });
 
