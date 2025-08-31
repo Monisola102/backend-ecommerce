@@ -17,14 +17,15 @@ const createToken = (id, role) => {
 
 export const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
-    httpOnly: true,                  // cannot be accessed by JS
+    httpOnly: true, // cannot be accessed by JS
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production",           // HTTPS only in production
-    sameSite: process.env.NODE_ENV === "production"? "none" : "lax", // cross-site for prod, lax for dev
-    path: "/",                       // send to all routes
+    secure: process.env.NODE_ENV === "production", // HTTPS only in production
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // cross-site for prod, lax for dev
+    path: "/",
+    domain: isProduction ? ".onrender.com" : undefined,
+    // send to all routes
   });
-
-}
+};
 
 export const RegisterUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -59,7 +60,7 @@ export const RegisterUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       role: newUser.role,
     },
-    token
+    token,
   });
 });
 
@@ -88,8 +89,8 @@ export const LogInUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-       },
-       token
+    },
+    token,
   });
 });
 
