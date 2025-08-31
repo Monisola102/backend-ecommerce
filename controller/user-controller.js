@@ -26,7 +26,7 @@ export const setTokenCookie = (res, token) => {
     path: "/",                       // send to all routes
   });
 
-
+}
 
 export const RegisterUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
