@@ -5,6 +5,7 @@ import OrderModel from "../model/order-model.js";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { sendResetEmail } from "../utils/email.js";
 
 const maxAge = 30 * 24 * 60 * 60;
@@ -19,8 +20,8 @@ export const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true, 
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
+    secure: true,
+    sameSite: "None",
     path: "/", 
   });
 };
@@ -95,8 +96,8 @@ export const LogInUser = asyncHandler(async (req, res) => {
 export const LogOutUser = asyncHandler(async (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true,
+    sameSite: "None",
     maxAge: 0,
   });
   res.status(200).json({ message: "Logged out successfully" });
@@ -249,7 +250,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000; // 1 hour
+  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000; 
   await user.save();
 
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
