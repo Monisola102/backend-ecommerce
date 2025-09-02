@@ -5,7 +5,7 @@ import OrderModel from "../model/order-model.js";
 import asyncHandler from "express-async-handler";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import { sendResetEmail } from "../utils/email.js";
 
 const maxAge = 30 * 24 * 60 * 60;
 
@@ -17,14 +17,13 @@ const createToken = (id, role) => {
 
 export const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
-    httpOnly: true,                  // cannot be accessed by JS
+    httpOnly: true, 
     maxAge: maxAge * 1000,
-    secure: process.env.NODE_ENV === "production",           // HTTPS only in production
-    sameSite: process.env.NODE_ENV === "production"? "none" : "lax", // cross-site for prod, lax for dev
-    path: "/",                       // send to all routes
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
+    path: "/", 
   });
-
-}
+};
 
 export const RegisterUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -59,7 +58,7 @@ export const RegisterUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       role: newUser.role,
     },
-    token
+    token,
   });
 });
 
@@ -88,8 +87,8 @@ export const LogInUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-       },
-       token
+    },
+    token,
   });
 });
 
@@ -244,13 +243,17 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error("User does not exist");
   }
 
-  // Create a temporary token valid for 1 hour
-  const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
-  });
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  // Save hashed token and expiry in DB
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000; // 1 hour
+  await user.save();
+
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-  // Send email
   await sendResetEmail(user.email, resetUrl);
 
   res.status(200).json({ message: "Password reset link sent to your email" });
@@ -258,28 +261,26 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
 export const resetPassword = asyncHandler(async (req, res) => {
   const { token, password } = req.body;
-
   if (!token || !password) {
     res.status(400);
     throw new Error("Token and new password are required");
   }
 
-  // Verify token
-  let decoded;
-  try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await UserModel.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
     res.status(400);
     throw new Error("Invalid or expired token");
   }
-
-  const user = await UserModel.findById(decoded.id);
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-
   user.password = await bcrypt.hash(password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
   await user.save();
 
   res.status(200).json({ message: "Password reset successful" });

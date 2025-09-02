@@ -34,8 +34,6 @@ export const createBrand = asyncHandler(async (req, res) => {
   res.status(201).json(brand);
 });
 
-
-// Get all brands
 export const getBrands = asyncHandler(async (req, res) => {
   const brands = await BrandModel.find({});
   res.json(brands);
@@ -48,18 +46,12 @@ export const updateBrand = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Brand not found");
   }
-
-  // Update name if provided
   brand.name = req.body.name || brand.name;
-
-  // Handle logo file upload
   if (req.file) {
-    // Delete old logo from Cloudinary if exists
     if (brand.logoPublicId) {
       await cloudinary.uploader.destroy(brand.logoPublicId);
     }
 
-    // Upload new logo
     try {
       const result = await saveImage(req.file, "brands");
       brand.logo = result.secure_url;
@@ -78,8 +70,6 @@ export const updateBrand = asyncHandler(async (req, res) => {
   });
 });
 
-
-// Delete brand
 export const deleteBrand = asyncHandler(async (req, res) => {
   const brand = await BrandModel.findById(req.params.id);
 

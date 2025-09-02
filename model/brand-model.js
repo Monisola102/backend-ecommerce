@@ -21,7 +21,7 @@ const BrandSchema = new Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true, // only admin can create
+      required: true, 
     },
   },
   { timestamps: true }

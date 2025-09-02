@@ -1,7 +1,5 @@
 import asyncHandler from "express-async-handler";
 import FavModel from "../model/fav-model.js";
-
-// Add favorite
 export const addFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
 
@@ -32,7 +30,6 @@ export const addFavorite = asyncHandler(async (req, res) => {
   });
 });
 
-// Remove favorite
 export const removeFavorite = asyncHandler(async (req, res) => {
   const { productId, size } = req.body;
 
