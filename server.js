@@ -18,13 +18,21 @@ app.use(express.json());
 console.log("FRONTEND_URL value:", JSON.stringify(process.env.FRONTEND_URL)); 
 
 app.use(cookieParser());
+const FRONTEND_URL = process.env.FRONTEND_URL; 
 app.use(
   cors({
-    origin:"https://my-shoe-shop.vercel.app",
+    origin:FRONTEND_URL,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
+    allowedHeaders: ["Content-Type", "Authorization"], 
   })
 );
-
+app.options("*", cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 app.get("/", (req, res) => {
   res.send("Backend API is running...");
