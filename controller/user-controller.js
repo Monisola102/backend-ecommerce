@@ -59,7 +59,6 @@ export const RegisterUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       role: newUser.role,
     },
-    token,
   });
 });
 
@@ -89,7 +88,6 @@ export const LogInUser = asyncHandler(async (req, res) => {
       email: user.email,
       role: user.role,
     },
-    token,
   });
 });
 
