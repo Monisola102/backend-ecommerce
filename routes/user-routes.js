@@ -1,12 +1,12 @@
 import express from "express"
-import { RegisterUser, LogInUser ,LogOutUser, handleCookies, readCookies ,getCurrentUser, updateUserProfile, getUserPayments , createPayment, getUserDashboard, forgotPassword, resetPassword } from "../controller/user-controller.js";
+import { RegisterUser, LogInUser ,LogOutUser,getCurrentUser, updateUserProfile, getUserPayments , createPayment, getUserDashboard, forgotPassword, resetPassword } from "../controller/user-controller.js";
 import { protect } from "../middleware/authMiddleware.js";
 const route = express.Router();
 route.post('/signup', RegisterUser)
 route.post('/login', LogInUser )
 route.post('/logout', LogOutUser)
-route.get('/set-cookie', handleCookies)
-route.get('/read-cookie', readCookies)
+/*route.get('/set-cookie', handleCookies)
+route.get('/read-cookie', readCookies)*/
 route.get("/me", protect, getCurrentUser);
 route.patch("/update-profile", protect, updateUserProfile);
 route.get('/payments', protect, getUserPayments);

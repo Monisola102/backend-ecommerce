@@ -9,14 +9,14 @@ const createToken = (id, role) => {
     expiresIn: "30d",
   });
 };
-const setTokenCookie = (res, token) => {
+/*const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true,
     maxAge: maxAge * 1000,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
-};
+};*/
 export const createAdminUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -39,9 +39,9 @@ export const createAdminUser = asyncHandler(async (req, res) => {
   }
 
   const token = createToken(admin._id, admin.role);
-  setTokenCookie(res, token);
   res.status(201).json({
     message: "Admin user created",
+    token,
     data: {
       id: admin._id,
       name: admin.name,
@@ -64,9 +64,9 @@ export const LogInAdmin = asyncHandler(async (req, res) => {
     throw new Error("Invalid password");
   }
   const token = createToken(registeredAdmin._id, registeredAdmin.role);
-  setTokenCookie(res, token);
   res.status(200).json({
     message: "Logged in successfully",
+    token,
     data: {
       id: registeredAdmin._id,
       name: registeredAdmin.name,
@@ -78,12 +78,12 @@ export const LogInAdmin = asyncHandler(async (req, res) => {
   });
 });
 export const LogOutAdmin = asyncHandler(async (req, res) => {
-  res.cookie("jwt", "", {
+  /*res.cookie("jwt", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     maxAge: 0, 
-  });
+  });*/
 
   res.status(200).json({ message: "Logged out successfully" });
 });

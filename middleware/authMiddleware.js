@@ -6,9 +6,7 @@ import UserModel from "../model/user-model.js";
 export const protect = asyncHandler(async (req, res, next) => {
   let token;
 
-  if (req.cookies?.jwt) {
-    token = req.cookies.jwt;
-  } else if (
+  if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
@@ -40,5 +38,7 @@ export const adminOnly = (req, res, next) => {
     throw new Error("Admin access only");
   }
 };
+
+
 
 
