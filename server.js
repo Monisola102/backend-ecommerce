@@ -9,7 +9,6 @@ import cartRoute from "./routes/carts-routes.js";
 import orderRoute from "./routes/order-routes.js";
 import brandRoute from "./routes/brand-routes.js";
 import favRoute from "./routes/fav-routes.js";
-import cookieParser from "cookie-parser";
 import cors from "cors";
 
 dotenv.config();
@@ -17,7 +16,6 @@ const app = express();
 app.use(express.json());
 console.log("FRONTEND_URL value:", JSON.stringify(process.env.FRONTEND_URL)); 
 
-app.use(cookieParser());
 const FRONTEND_URL = process.env.FRONTEND_URL; 
 app.use(
   cors({
