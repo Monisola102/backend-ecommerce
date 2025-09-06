@@ -21,7 +21,7 @@ export const setTokenCookie = (res, token) => {
     httpOnly: true, 
     maxAge: maxAge * 1000,
     secure: true,
-    sameSite: "none",
+    sameSite: "None",
     path: "/", 
   });
 };
@@ -94,7 +94,7 @@ export const LogOutUser = asyncHandler(async (req, res) => {
   res.cookie("jwt", "", {
     httpOnly: true,
     secure: true,
-    sameSite: "none",
+    sameSite: "None",
     maxAge: 0,
   });
   res.status(200).json({ message: "Logged out successfully" });
