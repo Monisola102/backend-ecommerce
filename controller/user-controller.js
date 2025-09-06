@@ -14,16 +14,17 @@ const createToken = (id, role) => {
     expiresIn: "30d",
   });
 };
+const maxAge = 30 * 24 * 60 * 60; 
 
-/*export const setTokenCookie = (res, token) => {
+export const setTokenCookie = (res, token) => {
   res.cookie("jwt", token, {
     httpOnly: true, 
     maxAge: maxAge * 1000,
     secure: true,
-    sameSite: "None",
+    sameSite: "none",
     path: "/", 
   });
-};*/
+};
 
 export const RegisterUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -48,10 +49,9 @@ export const RegisterUser = asyncHandler(async (req, res) => {
   });
 
   const token = createToken(newUser._id, newUser.role);
-
+  setTokenCookie(res, token);
   res.status(201).json({
     message: "User registered successfully",
-    token,
     user: {
       id: newUser._id.toString(),
       name: newUser.name,
@@ -77,10 +77,10 @@ export const LogInUser = asyncHandler(async (req, res) => {
   }
 
   const token = createToken(user._id, user.role);
+  setTokenCookie(res, token);
 
   res.status(200).json({
     message: "Logged in successfully",
-    token,
     user: {
       id: user._id.toString(),
       name: user.name,
@@ -91,12 +91,12 @@ export const LogInUser = asyncHandler(async (req, res) => {
 });
 
 export const LogOutUser = asyncHandler(async (req, res) => {
-  /*res.cookie("jwt", "", {
+  res.cookie("jwt", "", {
     httpOnly: true,
     secure: true,
-    sameSite: "None",
+    sameSite: "none",
     maxAge: 0,
-  });*/
+  });
   res.status(200).json({ message: "Logged out successfully" });
 });
 
@@ -119,7 +119,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   });
 });
 
-/*export const handleCookies = asyncHandler(async (req, res) => {
+export const handleCookies = asyncHandler(async (req, res) => {
   res.cookie("newUser", false);
   res.cookie("isEmployee", true, {
     maxAge: 1000 * maxAge,
@@ -131,7 +131,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 
 export const readCookies = asyncHandler(async (req, res) => {
   res.status(200).json({ cookies: req.cookies });
-});*/
+});
 
 export const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await UserModel.findById(req.user._id);
