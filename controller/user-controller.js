@@ -8,7 +8,6 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendResetEmail } from "../utils/email.js";
 
-const maxAge = 30 * 24 * 60 * 60;
 
 const createToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.JWT_SECRET, {
