@@ -39,17 +39,20 @@ export const removeFavorite = asyncHandler(async (req, res) => {
     size: size || "",
   });
 
+if (!deleted) {
+    return res.status(404).json({ message: "Favorite not found" });
+  }
+
   res.status(200).json({
     message: "Removed from favorites",
     favorite: deleted,
   });
 });
 
-// Get favorites
 export const getFavorites = asyncHandler(async (req, res) => {
   const favorites = await FavModel.find({ user: req.user._id }).populate({
     path: "product",
-    populate: { path: "brand", select: "name" }, // populate brand with only name
+    populate: { path: "brand", select: "name" }, 
   });
 
   res.status(200).json({
