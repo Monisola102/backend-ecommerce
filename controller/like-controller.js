@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import FavModel from "../model/fav-model.js";
 export const addFavorite = asyncHandler(async (req, res) => {
-  const { productId, size } = req.query;
+  const { productId, size } = req.body;
 
   const exists = await FavModel.findOne({
     user: req.user._id,
@@ -57,7 +57,7 @@ export const getFavorites = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     message: "Fetched favorites",
-    favorites,
+    favorites: favorites || [],
   });
 });
 
