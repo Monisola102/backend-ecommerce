@@ -85,12 +85,10 @@ export const getProducts = asyncHandler(async (req, res) => {
   }
 
   if (category) {
-  query.category = { $regex: `^${category}$`, $options: "i" }; 
-}
-
+    query.category = { $regex: `^${category}$`, $options: "i" };
+  }
 
   if (brand) {
-    // Since product stores brand as ObjectId, we find brand by name
     const brandDoc = await BrandModel.findOne({ name: brand });
     if (brandDoc) {
       query.brand = brandDoc._id;
@@ -195,7 +193,6 @@ export const addReview = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-  // check if user already reviewed
   const alreadyReviewed = product.reviews.find(
     (r) => r.user.toString() === req.user._id.toString()
   );
@@ -204,8 +201,6 @@ export const addReview = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("You have already reviewed this product");
   }
-
-  // push new review
   const review = {
     user: req.user._id,
     rating: Number(rating),
@@ -213,8 +208,6 @@ export const addReview = asyncHandler(async (req, res) => {
   };
 
   product.reviews.push(review);
-
-  // update rating count & average
   product.ratingCount = product.reviews.length;
   product.ratingAverage =
     product.reviews.reduce((acc, r) => acc + r.rating, 0) /
@@ -230,7 +223,7 @@ export const addReview = asyncHandler(async (req, res) => {
 });
 export const updateReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
-  const productId = req.params.id;
+  const { id: productId, reviewId } = req.params;
 
   const product = await ProductsModel.findById(productId);
 
@@ -239,19 +232,18 @@ export const updateReview = asyncHandler(async (req, res) => {
     throw new Error("Product not found");
   }
 
-  const review = product.reviews.find(
-    (r) => r.user.toString() === req.user._id.toString()
-  );
-
+  const review = product.reviews.id(reviewId);
   if (!review) {
     res.status(404);
     throw new Error("Review not found");
   }
 
+  if (review.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error("Not authorized to edit this review");
+  }
   review.rating = rating ?? review.rating;
   review.comment = comment ?? review.comment;
-
-  // recalc ratings
   product.ratingAverage =
     product.reviews.reduce((acc, r) => acc + r.rating, 0) /
     product.reviews.length;
@@ -265,20 +257,22 @@ export const updateReview = asyncHandler(async (req, res) => {
   });
 });
 export const deleteReview = asyncHandler(async (req, res) => {
-  const productId = req.params.id;
-
+  const { id: productId, reviewId } = req.params;
   const product = await ProductsModel.findById(productId);
-
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
   }
-
+  const review = product.reviews.id(reviewId);
+  if (!review) throw new Error("Review not found");
+  if (review.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error("Not authorized to delete this review");
+  }
   product.reviews = product.reviews.filter(
-    (r) => r.user.toString() !== req.user._id.toString()
+    (r) => r.user.toString() !== req.user._id.toString() &&   req.user.role !== 'admin'
   );
-
-  // recalc ratings
+  review.deleteOne();
   product.ratingCount = product.reviews.length;
   product.ratingAverage =
     product.reviews.length > 0
@@ -294,9 +288,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
     data: product,
   });
 });
-// @desc    Get all reviews for a product
-// @route   GET /api/products/:id/reviews
-// @access  Public
+
 export const getReviews = asyncHandler(async (req, res) => {
   const product = await ProductsModel.findById(req.params.id).populate(
     "reviews.user",
