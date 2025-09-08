@@ -31,8 +31,8 @@ export const addFavorite = asyncHandler(async (req, res) => {
 });
 
 export const removeFavorite = asyncHandler(async (req, res) => {
-  const { productId, size } = req.query;
-
+  const { productId} = req.params;
+const {size} = req.query;
   const deleted = await FavModel.findOneAndDelete({
     user: req.user._id,
     product: productId,

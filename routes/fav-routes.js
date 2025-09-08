@@ -4,5 +4,5 @@ import { protect } from "../middleware/authMiddleware.js";
 const route = express.Router();
 route.get("/favorites", protect, getFavorites);
 route.post("/add-favorite", protect, addFavorite);
-route.delete("/remove-favorite", protect, removeFavorite);
+route.delete("/remove-favorite/:productId", protect, removeFavorite);
 export default route;
