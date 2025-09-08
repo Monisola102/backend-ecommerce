@@ -263,21 +263,21 @@ export const deleteReview = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Product not found");
   }
+
   const review = product.reviews.id(reviewId);
-  if (!review) throw new Error("Review not found");
-  if (review.user.toString() !== req.user._id.toString()) {
+  if (!review) {
+    res.status(404);
+    throw new Error("Review not found");
+  }
+  if (req.user.role !== "admin" && review.user.toString() !== req.user._id.toString()) {
     res.status(403);
     throw new Error("Not authorized to delete this review");
   }
-  product.reviews = product.reviews.filter(
-    (r) => r.user.toString() !== req.user._id.toString() &&   req.user.role !== 'admin'
-  );
-  review.deleteOne();
+  review.remove();
   product.ratingCount = product.reviews.length;
   product.ratingAverage =
     product.reviews.length > 0
-      ? product.reviews.reduce((acc, r) => acc + r.rating, 0) /
-        product.reviews.length
+      ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length
       : 0;
 
   await product.save();
@@ -288,6 +288,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
     data: product,
   });
 });
+
 
 export const getReviews = asyncHandler(async (req, res) => {
   const product = await ProductsModel.findById(req.params.id).populate(
