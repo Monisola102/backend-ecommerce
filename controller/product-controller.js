@@ -292,10 +292,9 @@ export const deleteReview = asyncHandler(async (req, res) => {
 
 export const getReviews = asyncHandler(async (req, res) => {
   const product = await ProductsModel.findById(req.params.id).populate(
-    "reviews.user",
-    "name"
-  );
-
+  "reviews.user",
+  "_id name"
+);
   if (!product) {
     res.status(404);
     throw new Error("Product not found");
