@@ -218,7 +218,7 @@ export const addReview = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: "Review added successfully",
-    data: product,
+    data: product.reviews,
   });
 });
 export const updateReview = asyncHandler(async (req, res) => {
@@ -253,7 +253,7 @@ export const updateReview = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: "Review updated successfully",
-    data: product,
+    data: product.reviews,
   });
 });
 export const deleteReview = asyncHandler(async (req, res) => {
@@ -285,7 +285,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: "Review deleted successfully",
-    data: product,
+    data: product.reviews,
   });
 });
 
