@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendResetEmail } from "../utils/email.js";
+import validator from "validator";
 
 
 const createToken = (id, role) => {
@@ -32,7 +33,10 @@ export const RegisterUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("All fields are required");
   }
-
+  if (!validator.isEmail(email)) {
+    res.status(400);
+    throw new Error("Email is not valid");
+  }
   const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
     res.status(409);
@@ -63,7 +67,15 @@ export const RegisterUser = asyncHandler(async (req, res) => {
 
 export const LogInUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("All fields are required");
+  }
 
+  if (!validator.isEmail(email)) {
+    res.status(400);
+    throw new Error("Email is not valid");
+  }
   const user = await UserModel.findOne({ email });
   if (!user) {
     res.status(404);
@@ -244,7 +256,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
-  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000; 
+  user.resetPasswordExpire = Date.now() + 60 * 60 * 1000;
   await user.save();
 
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
