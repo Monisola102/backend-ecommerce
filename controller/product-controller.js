@@ -213,7 +213,7 @@ export const addReview = asyncHandler(async (req, res) => {
     product.reviews.length;
 
   await product.save();
-
+ await product.populate("reviews.user", "_id name");
   res.status(201).json({
     success: true,
     message: "Review added successfully",
@@ -250,7 +250,7 @@ export const updateReview = asyncHandler(async (req, res) => {
     product.reviews.length;
 
   await product.save();
-
+ await product.populate("reviews.user", "_id name");
   res.status(200).json({
     success: true,
     message: "Review updated successfully",
@@ -289,7 +289,7 @@ export const deleteReview = asyncHandler(async (req, res) => {
       : 0;
 
   await product.save();
-
+ await product.populate("reviews.user", "_id name");
   res.status(200).json({
     success: true,
     message: "Review deleted successfully",
