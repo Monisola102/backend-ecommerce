@@ -46,6 +46,7 @@ phone: {
   type: String,
   default: ''
 },
+
     role: {
       type: String,
       enum: ["admin", "user"],
